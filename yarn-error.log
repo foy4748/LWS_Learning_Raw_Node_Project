@@ -1,0 +1,36 @@
+Arguments: 
+  /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/usr/bin/yarn add nodemon
+
+PATH: 
+  /data/data/com.termux/files/usr/bin
+
+Yarn version: 
+  1.22.18
+
+Node version: 
+  17.7.2
+
+Platform: 
+  android arm
+
+Trace: 
+  Error: EPERM: operation not permitted, symlink '../../../semver/bin/semver.js' -> '/storage/emulated/0/Projects/LWS_NODEJS/node_modules/make-dir/node_modules/.bin/semver'
+
+npm manifest: 
+  {
+    "name": "lws_nodejs",
+    "version": "1.0.0",
+    "description": "Learning NodeJS with Sumit da. RAW NODE APP",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "lws",
+    "license": "ISC"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

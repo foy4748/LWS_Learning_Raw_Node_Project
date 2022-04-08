@@ -1,0 +1,14 @@
+{
+  "name": "lws_nodejs",
+  "version": "1.0.0",
+  "description": "Learning NodeJS with Sumit da. RAW NODE APP",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index"
+  },
+  "author": "lws",
+  "license": "ISC",
+  "dependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
