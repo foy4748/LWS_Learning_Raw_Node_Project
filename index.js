@@ -1,11 +1,13 @@
 const http = require("http");
 const { reqResHandler } = require("./helpers/reqRes");
+const environment = require("./environments");
+
 //Scafolding the app
 const app = {};
 
 //Configurations
 app.config = {
-  port: 3001,
+  port: environment.port,
 };
 
 //*****Defining functions *****

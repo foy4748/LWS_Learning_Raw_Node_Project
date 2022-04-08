@@ -4,7 +4,8 @@
   "description": "Learning NodeJS with Sumit da. RAW NODE APP",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index"
+    "start": "NODE_ENV=development nodemon index",
+    "production": "NODE_ENV=production nodemon index"
   },
   "author": "lws",
   "license": "ISC",
