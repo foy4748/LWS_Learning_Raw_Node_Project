@@ -1,6 +1,13 @@
 const http = require("http");
 const { reqResHandler } = require("./helpers/reqRes");
 const environment = require("./environments");
+//TEST
+
+const crud = require("./lib/crud");
+
+crud.delete("test", "storage", (error) => console.log(error));
+
+//END of TEST
 
 //Scafolding the app
 const app = {};
