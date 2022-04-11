@@ -8,6 +8,8 @@ const {
   notFoundHandler,
 } = require("../handlers/routeHandlers/notFoundHandler");
 
+const { parsedJSON } = require("./utilities");
+
 //Scafolding
 const reqRes = {};
 
@@ -20,7 +22,7 @@ reqRes.reqResHandler = (req, res) => {
   const headerObject = req.headers;
 
   //Request object
-  const requestObject = {
+  let requestObject = {
     parsedUrl,
     trimmedPath,
     queryObject,
@@ -33,36 +35,35 @@ reqRes.reqResHandler = (req, res) => {
     ? routes[trimmedPath]
     : notFoundHandler;
 
-  //Executing Chosen Handler
-  chosenHandler(requestObject, (statusCode, payload) => {
-    statusCode = typeof statusCode === "number" ? statusCode : 500;
-    payload = typeof payload === "object" ? payload : {};
-
-    const payloadString = JSON.stringify(payload);
-
-    //Returing final response
-    res.writeHead(statusCode);
-    res.end(payloadString);
-  });
-};
-
-module.exports = reqRes;
-
-/*
-
-
+  //Parsing data from request
   const decoder = new StringDecoder("utf8");
   let container = "";
-
-  //////////////////////////////////////////////////////////
   req.on("data", (buffer) => {
     container += decoder.write(buffer);
   });
 
   req.on("end", () => {
     container += decoder.end();
-    console.log(container);
-  });
+    requestObject.body = parsedJSON(container);
+    //Executing Chosen Handler as a callback in the end of req event!! Very IMPORTANT
+    chosenHandler(requestObject, (statusCode, payload) => {
+      statusCode = typeof statusCode === "number" ? statusCode : 500;
+      payload = typeof payload === "object" ? payload : {};
 
-  res.end("Hello Devs"); //Handling Responses
-*/
+      const payloadString = JSON.stringify(payload);
+
+      //Returing final response
+
+      //Part of Raw Node Project 3
+      //It's really important to let the client know that
+      //the server is sending json data when constructing
+      //REST API
+      res.setHeader("Content-Type", "application/json");
+      /////////////////////////
+      res.writeHead(statusCode);
+      res.end(payloadString);
+    });
+  });
+};
+
+module.exports = reqRes;

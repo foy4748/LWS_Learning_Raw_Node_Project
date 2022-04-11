@@ -4,11 +4,13 @@ const environment = {};
 environment.development = {
   port: 3001,
   envName: "development",
+  secretKey: "fart in a jar MarTin",
 };
 
 environment.production = {
   port: 5001,
   envName: "production",
+  secretKey: "be furious farter",
 };
 
 //Checking Environment
