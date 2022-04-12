@@ -3,6 +3,7 @@
 //Dependencies
 const crud = require("../../lib/crud");
 const { hash } = require("../../helpers/utilities");
+const { parsedJSON } = require("../../helpers/utilities");
 
 //Scafolding
 const handler = {};
@@ -20,7 +21,30 @@ handler.userHandler = (reqObj, callback) => {
 handler._users = {};
 
 handler._users.get = (reqObj, callback) => {
-  callback(200, { message: "You are visiting user url" });
+  let { mobileNo } = reqObj.queryObject;
+  if (
+    //Mobile no validatio
+    typeof mobileNo === "string" &&
+    mobileNo.trim().length === 11
+  ) {
+    mobileNo = mobileNo;
+  } else {
+    mobileNo = false;
+  }
+
+  if (mobileNo) {
+    crud.read("user", mobileNo, (err, u) => {
+      const user = { ...parsedJSON(u) };
+      if (!err && user) {
+        delete user.password;
+        callback(200, user);
+      } else {
+        callback(404, {
+          message: `User is not found with mobile no ${mobileNo}`,
+        });
+      }
+    });
+  }
 };
 handler._users.post = (reqObj, callback) => {
   //Destructuring POSTed form data
