@@ -20,7 +20,23 @@ handler.tokenHandler = (reqObj, callback) => {
 
 handler._token = {};
 
-handler._token.get = (reqObj, callback) => {};
+handler._token.get = (reqObj, callback) => {
+  let { id } = reqObj.queryObject;
+  //Validating token ID
+  id = validate._id(id);
+  if (id) {
+    crud.read("token", id, (err, data) => {
+      if (!err && data) {
+        let data_json = parsedJSON(data);
+        callback(200, data_json);
+      } else {
+        callback(500, { message: "Couldn't read data" });
+      }
+    });
+  } else {
+    callback(400, { message: "ID is invalid" });
+  }
+};
 handler._token.post = (reqObj, callback) => {
   let { mobileNo, password } = reqObj.body;
 

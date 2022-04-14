@@ -67,4 +67,14 @@ validate._user = (reqBodyObj) => {
 };
 //END of Validating form data
 
+//Validating token ID
+validate._id = (raw_id) => {
+  let id = raw_id;
+  if (typeof id === "string" && id.length === 20) {
+    return id;
+  } else {
+    return false;
+  }
+};
+
 module.exports = validate;
