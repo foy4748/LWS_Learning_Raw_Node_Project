@@ -27,4 +27,15 @@ utilities.hash = (str) => {
   }
 };
 
+//Generate Random string of a specific length
+utilities.randomString = (strlen) => {
+  const charSet =
+    "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let rand = "";
+  for (let i = 0; i < strlen; i++) {
+    rand += charSet.charAt(Math.floor(Math.random() * 63));
+  }
+  return rand;
+};
+
 module.exports = utilities;

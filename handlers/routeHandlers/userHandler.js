@@ -43,9 +43,10 @@ handler._users.get = (reqObj, callback) => {
   }
 };
 handler._users.post = (reqObj, callback) => {
-  const valid = validate._user(reqObj.body);
+  let valid = validate._user(reqObj.body);
   //POSTing data to local storage / database (say)
   if (valid) {
+    valid.password = validate._password(valid.password);
     crud.read("user", valid.mobileNo, (err) => {
       if (err) {
         crud.create("user", `${valid.mobileNo}`, valid, (error) => {
