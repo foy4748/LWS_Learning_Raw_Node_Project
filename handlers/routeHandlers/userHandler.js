@@ -2,7 +2,7 @@
 
 //Dependencies
 const crud = require("../../lib/crud");
-const { hash } = require("../../helpers/utilities");
+const validate = require("../../helpers/validate");
 const { parsedJSON } = require("../../helpers/utilities");
 
 //Scafolding
@@ -22,16 +22,8 @@ handler._users = {};
 
 handler._users.get = (reqObj, callback) => {
   let { mobileNo } = reqObj.queryObject;
-  if (
-    //Mobile no validatio
-    typeof mobileNo === "string" &&
-    mobileNo.trim().length === 11
-  ) {
-    mobileNo = mobileNo;
-  } else {
-    mobileNo = false;
-  }
-
+  //Validating mobileNo
+  mobileNo = validate._mobileNo(mobileNo);
   if (mobileNo) {
     crud.read("user", mobileNo, (err, u) => {
       const user = { ...parsedJSON(u) };
@@ -44,50 +36,16 @@ handler._users.get = (reqObj, callback) => {
         });
       }
     });
+  } else {
+    callback(400, {
+      message: "Mobile no is not valid,",
+    });
   }
 };
 handler._users.post = (reqObj, callback) => {
-  //Destructuring POSTed form data
-  const { firstName, lastName, mobileNo, password } = reqObj.body;
-
-  const valid = {}; //Scafolding valid data
-
-  //Validating form data
-  if (
-    //FIRST NAME VALIDATION
-    typeof firstName === "string" &&
-    firstName.trim().length > 0 &&
-    firstName.trim().length < 50
-  ) {
-    valid.firstName = firstName;
-  } else {
-    valid.firstName = false;
-  }
-  if (
-    //LAST NAME VALIDATION
-    typeof lastName === "string" &&
-    lastName.trim().length > 0 &&
-    lastName.trim().length < 50
-  ) {
-    valid.lastName = lastName;
-  } else {
-    valid.lastName = false;
-  }
-
-  if (
-    //Mobile no validatio
-    typeof mobileNo === "string" &&
-    mobileNo.trim().length === 11
-  ) {
-    valid.mobileNo = mobileNo;
-  } else {
-    valid.mobileNo = false;
-  }
-  valid.password = hash(password);
-  //END of Validating form data
-
+  const valid = validate._user(reqObj.body);
   //POSTing data to local storage / database (say)
-  if (valid.firstName && valid.lastName && valid.mobileNo && valid.password) {
+  if (valid) {
     crud.read("user", valid.mobileNo, (err) => {
       if (err) {
         crud.create("user", `${valid.mobileNo}`, valid, (error) => {
@@ -103,7 +61,43 @@ handler._users.post = (reqObj, callback) => {
     callback(403, { message: "Invalid form data has been submitted" });
   }
 };
-handler._users.put = (reqObj, callback) => {};
-handler._users.delete = (reqObj, callback) => {};
+handler._users.put = (reqObj, callback) => {
+  //Validating User submitted form data
+  const validUser = validate._user(reqObj.body);
+
+  if (validUser) {
+    crud.read("user", validUser.mobileNo, (err, userData) => {
+      if (!err && userData) {
+        crud.update("user", validUser.mobileNo, validUser, (err2) => {
+          console.log("Something went wrong while updateing file", err2);
+        });
+        callback(200, { message: "Updated user successfully" });
+      } else {
+        callback(500, { message: "Read operation failed" });
+      }
+    });
+  } else {
+    callback(400, { message: "Submitted form is not valid" });
+  }
+};
+handler._users.delete = (reqObj, callback) => {
+  let { mobileNo } = reqObj.queryObject;
+  //Validating mobile no
+  mobileNo = validate._mobileNo(mobileNo);
+  if (mobileNo) {
+    crud.read("user", mobileNo, (err, data) => {
+      if (!err && data) {
+        crud.delete("user", mobileNo, (err) => console.log(err));
+        callback(200, { message: "Deleted user successfully" });
+      } else {
+        callback(500, {
+          message: `User doesn't exist with mobile no ${mobileNo}`,
+        });
+      }
+    });
+  } else {
+    callback(400, { message: "Mobile no is not valid" });
+  }
+};
 
 module.exports = handler;
