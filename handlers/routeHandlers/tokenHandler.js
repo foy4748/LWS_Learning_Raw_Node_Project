@@ -73,7 +73,50 @@ handler._token.post = (reqObj, callback) => {
     callback(400, { message: "Invalid mobileNo" });
   }
 };
-handler._token.put = (reqObj, callback) => {};
-handler._token.delete = (reqObj, callback) => {};
+handler._token.put = (reqObj, callback) => {
+  let { id, extend } = reqObj.body;
+  id = validate._id(id);
+  extend = typeof extend === "boolean" && extend === true ? true : false;
+  if (id && extend) {
+    crud.read("token", id, (err, data) => {
+      if (!err && data) {
+        let update_token_form = parsedJSON(data);
+        if (update_token_form.expires > Date.now()) {
+          update_token_form.expires = Date.now() + 60 * 60 * 1000;
+          crud.update("token", id, update_token_form, (err) => {
+            if (!err) {
+              callback(200, { message: "Updated Token" });
+            } else {
+              callback(500, { message: "Token update has been failed" });
+            }
+          });
+          callback(200, { message: "Updated Token" });
+        } else {
+          callback(500, { message: "Token has been expired" });
+        }
+      } else {
+        callback(500, { message: "Token is not found at db" });
+      }
+    });
+  } else {
+    callback(400, { message: "Token is not valid" });
+  }
+};
+handler._token.delete = (reqObj, callback) => {
+  let { id } = reqObj.queryObject;
+  id = validate._id(id);
+  if (id) {
+    crud.read("token", id, (err, data) => {
+      if (!err && data) {
+        crud.delete("token", id);
+        callback(200, { message: "Token has been deleted" });
+      } else {
+        callback(500, { message: "Token wasn't found in db" });
+      }
+    });
+  } else {
+    callback(400, { message: "Invalid Token" });
+  }
+};
 
 module.exports = handler;
