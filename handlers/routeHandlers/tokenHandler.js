@@ -119,4 +119,28 @@ handler._token.delete = (reqObj, callback) => {
   }
 };
 
+handler.validate = (tokenId, mobNo, callback) => {
+  let id = validate._id(tokenId);
+  let mobileNo = validate._mobileNo(mobNo);
+  if (id && mobileNo) {
+    crud.read("token", id, (err, data) => {
+      if (!err && data) {
+        const tokenData = parsedJSON(data);
+        if (tokenData.mobileNo === mobileNo && tokenData.expires > Date.now()) {
+          callback(true);
+        } else {
+          console.log("Token id is not associated with user");
+          callback(false);
+        }
+      } else {
+        console.log("Token not found in db");
+        callback(false);
+      }
+    });
+  } else {
+    console.log("Token Id or mobileNo is invalid");
+    callback(false);
+  }
+};
+
 module.exports = handler;

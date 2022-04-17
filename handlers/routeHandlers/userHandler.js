@@ -4,6 +4,7 @@
 const crud = require("../../lib/crud");
 const validate = require("../../helpers/validate");
 const { parsedJSON } = require("../../helpers/utilities");
+const tokenHandler = require("./tokenHandler");
 
 //Scafolding
 const handler = {};
@@ -22,25 +23,26 @@ handler._users = {};
 
 handler._users.get = (reqObj, callback) => {
   let { mobileNo } = reqObj.queryObject;
-  //Validating mobileNo
-  mobileNo = validate._mobileNo(mobileNo);
-  if (mobileNo) {
-    crud.read("user", mobileNo, (err, u) => {
-      const user = { ...parsedJSON(u) };
-      if (!err && user) {
-        delete user.password;
-        callback(200, user);
-      } else {
-        callback(404, {
-          message: `User is not found with mobile no ${mobileNo}`,
-        });
-      }
-    });
-  } else {
-    callback(400, {
-      message: "Mobile no is not valid,",
-    });
-  }
+  let { token } = reqObj.headerObject;
+  tokenHandler.validate(token, mobileNo, (valid) => {
+    if (typeof valid === "boolean" && valid) {
+      crud.read("user", mobileNo, (err, u) => {
+        const user = { ...parsedJSON(u) };
+        if (!err && user) {
+          delete user.password;
+          callback(200, user);
+        } else {
+          callback(404, {
+            message: `User is not found with mobile no ${mobileNo}`,
+          });
+        }
+      });
+    } else {
+      callback(400, {
+        message: "Authentication failed",
+      });
+    }
+  });
 };
 handler._users.post = (reqObj, callback) => {
   let valid = validate._user(reqObj.body);
@@ -65,40 +67,49 @@ handler._users.post = (reqObj, callback) => {
 handler._users.put = (reqObj, callback) => {
   //Validating User submitted form data
   const validUser = validate._user(reqObj.body);
+  let { token } = reqObj.headerObject;
 
-  if (validUser) {
-    crud.read("user", validUser.mobileNo, (err, userData) => {
-      if (!err && userData) {
-        crud.update("user", validUser.mobileNo, validUser, (err2) => {
-          console.log("Something went wrong while updateing file", err2);
+  tokenHandler.validate(
+    token,
+    validUser ? validUser.mobileNo : false,
+    (valid) => {
+      if (valid) {
+        crud.read("user", validUser.mobileNo, (err, userData) => {
+          if (!err && userData) {
+            crud.update("user", validUser.mobileNo, validUser, (err2) => {
+              console.log("Something went wrong while updateing file", err2);
+            });
+            callback(200, { message: "Updated user successfully" });
+          } else {
+            callback(500, { message: "Read operation failed" });
+          }
         });
-        callback(200, { message: "Updated user successfully" });
       } else {
-        callback(500, { message: "Read operation failed" });
+        callback(400, { message: "Submitted form is not valid" });
       }
-    });
-  } else {
-    callback(400, { message: "Submitted form is not valid" });
-  }
+    }
+  );
 };
 handler._users.delete = (reqObj, callback) => {
   let { mobileNo } = reqObj.queryObject;
-  //Validating mobile no
-  mobileNo = validate._mobileNo(mobileNo);
-  if (mobileNo) {
-    crud.read("user", mobileNo, (err, data) => {
-      if (!err && data) {
-        crud.delete("user", mobileNo, (err) => console.log(err));
-        callback(200, { message: "Deleted user successfully" });
-      } else {
-        callback(500, {
-          message: `User doesn't exist with mobile no ${mobileNo}`,
-        });
-      }
-    });
-  } else {
-    callback(400, { message: "Mobile no is not valid" });
-  }
+  let { token } = reqObj.headerObject;
+  tokenHandler.validate(token, mobileNo, (valid) => {
+    if (valid) {
+      crud.read("user", mobileNo, (err, data) => {
+        if (!err && data) {
+          crud.delete("user", mobileNo, (err) => console.log(err));
+          crud.delete("token", token, (err) => console.log(err));
+          callback(200, { message: "Deleted user successfully" });
+        } else {
+          callback(500, {
+            message: `User doesn't exist with mobile no ${mobileNo}`,
+          });
+        }
+      });
+    } else {
+      callback(400, { message: "Deletion failed" });
+    }
+  });
 };
 
 module.exports = handler;
