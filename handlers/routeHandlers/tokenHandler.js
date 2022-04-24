@@ -49,7 +49,7 @@ handler._token.post = (reqObj, callback) => {
         const user = parsedJSON(data);
         if (user.password === password) {
           const id = randomString(20);
-          const expires = Date.now() + 60 * 60 * 1000;
+          const expires = Date.now() + 2 * 24 * 60 * 60 * 1000; //Two days token
 
           const tokenObj = {
             id,
@@ -119,6 +119,7 @@ handler._token.delete = (reqObj, callback) => {
   }
 };
 
+//Validating Token by Reading from database
 handler.validate = (tokenId, mobNo, callback) => {
   let id = validate._id(tokenId);
   let mobileNo = validate._mobileNo(mobNo);
