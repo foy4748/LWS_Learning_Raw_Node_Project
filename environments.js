@@ -5,6 +5,14 @@ environment.development = {
   port: 3001,
   envName: "development",
   secretKey: "fart in a jar MarTin",
+  //Add Twilio credentials
+  twilio: {
+    //Used TEST Credentials
+    TWILIO_ACCOUNT_SID: "",
+    TWILIO_AUTH_TOKEN: "",
+    From: "+15005550006",
+    To: "+15005550009", //To test failure case
+  },
 };
 
 environment.production = {

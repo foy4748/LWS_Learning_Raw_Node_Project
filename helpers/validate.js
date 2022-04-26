@@ -172,4 +172,11 @@ validate._check = (raw_reqObjBody) => {
 };
 //END of Validating CHECK links --------------------
 
+validate._userMsg = (raw_msg) => {
+  let msg = raw_msg;
+  msg =
+    typeof msg === "string" && msg.trim().length < 1600 ? msg.trim() : false;
+  return msg;
+};
+
 module.exports = validate;
