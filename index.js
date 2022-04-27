@@ -1,26 +1,19 @@
-const http = require("http");
-const { reqResHandler } = require("./helpers/reqRes");
-const environment = require("./environments");
+//Spins the Server
+//as well as
+//Start Worker Functions
 
-//Scafolding the app
+const server = require("./lib/server");
+const workers = require("./lib/workers");
+
 const app = {};
 
-//Configurations
-app.config = {
-  port: environment.port,
+//Wrapping Functions
+app.init = () => {
+  server.init();
+  workers.init();
 };
 
-//*****Defining functions *****
+//Excecuting those wrapped functions
+app.init();
 
-//*****Creating the server
-app.createServer = () => {
-  const server = http.createServer(app.reqResHandle);
-  const PORT = app.config.port;
-  server.listen(PORT, () => console.log(`Server is listening to port ${PORT}`));
-};
-
-//*****Handling Requests and Responses
-app.reqResHandle = reqResHandler;
-
-//*****Invoking functions *****
-app.createServer();
+module.exports = app;

@@ -19,6 +19,14 @@ environment.production = {
   port: 5001,
   envName: "production",
   secretKey: "be furious farter",
+  //Add Twilio credentials
+  twilio: {
+    //Used PRODUCTION Credentials
+    TWILIO_ACCOUNT_SID: "",
+    TWILIO_AUTH_TOKEN: "",
+    From: "+15005550006",
+    To: "+15005550009", //To test failure case
+  },
 };
 
 //Checking Environment

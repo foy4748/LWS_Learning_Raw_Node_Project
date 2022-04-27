@@ -50,7 +50,7 @@ notifications.smsNotification = (phone, msg, callback) => {
     req.write(stringifiedPayload);
     req.end();
   } else {
-    callback("Invalid Phone no or Message length exceeded");
+    callback(true, "Invalid Phone no or Message length exceeded");
   }
 };
 

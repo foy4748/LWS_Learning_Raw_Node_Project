@@ -77,9 +77,10 @@ handler._users.put = (reqObj, callback) => {
         crud.read("user", validUser.mobileNo, (err, userData) => {
           if (!err && userData) {
             crud.update("user", validUser.mobileNo, validUser, (err2) => {
-              console.log("Something went wrong while updateing file", err2);
+              err2
+                ? console.log("Something went wrong while updateing file", err2)
+                : callback(200, { message: "Updated user successfully" });
             });
-            callback(200, { message: "Updated user successfully" });
           } else {
             callback(500, { message: "Read operation failed" });
           }

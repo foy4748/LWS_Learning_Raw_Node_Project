@@ -85,27 +85,42 @@ handler._check.post = (reqObj, callback) => {
                     //As well as associated with user.
                     const checkId = utilities.randomString(20);
                     //Creating check object
-                    const checkObj = { ...validCheck, id: checkId };
+                    const checkObj = {
+                      ...validCheck,
+                      id: checkId,
+                      mobileNo: userData.mobileNo,
+                    };
 
                     //Updatng user object
                     let checks = userData.checks ? userData.checks : [];
                     if (checks instanceof Array && checks.length < 5) {
                       crud.create("check", checkId, checkObj, (err) => {
-                        err ? callback(500) : callback(200);
-                      });
-                      checks.push(checkId);
-                      const userWithCheck = { ...userData, checks };
-                      crud.update(
-                        "user",
-                        userData.mobileNo,
-                        userWithCheck,
-                        (err) => {
-                          err ? callback(500) : callback(200);
+                        if (err) {
+                          callback(500, { message: "Couldn't create CHECK" });
+                        } else {
+                          checks.push(checkId);
+                          const userWithCheck = { ...userData, checks };
+                          crud.update(
+                            "user",
+                            userData.mobileNo,
+                            userWithCheck,
+                            (err) => {
+                              err
+                                ? callback(500, {
+                                    message:
+                                      "Couldn't add CHECK to associated USER",
+                                  })
+                                : callback(200, {
+                                    message: "Added CHECK to USER Successfully",
+                                  });
+                            }
+                          );
                         }
-                      );
+                      });
+                      /*
                       callback(200, {
                         message: "Successfully added check to user",
-                      });
+                      });*/
                     } else {
                       callback(403, {
                         message: "Maximum limit of checks exceeded",
@@ -162,43 +177,53 @@ handler._check.put = (reqObj, callback) => {
                     if (protocol) {
                       checkObj.protocol = protocol;
                     } else {
-                      invalidMessage += " Protocol is invalid. ";
+                      invalidMessage += " Protocol, ";
                     }
 
                     if (url) {
                       checkObj.url = url;
                     } else {
-                      invalidMessage += " URL is invalid. ";
+                      invalidMessage += " URL, ";
                     }
 
                     if (method) {
                       checkObj.method = method;
                     } else {
-                      invalidMessage += " Method is invalid. ";
+                      invalidMessage += " Method, ";
                     }
 
                     if (successCodes) {
                       checkObj.successCodes = successCodes;
                     } else {
-                      invalidMessage += " SuccessCodes are invalid. ";
+                      invalidMessage += " SuccessCodes, ";
                     }
 
                     if (timeout) {
                       checkObj.timeout = timeout;
                     } else {
-                      invalidMessage += " Timeout is invalid. ";
+                      invalidMessage += " Timeout ";
                     }
 
-                    crud.update("check", id, checkObj, (err) => {
-                      err ? callback(500) : callback(200);
-                    });
-
-                    if (invalidMessage.length < 1) {
-                      callback(200, { message: "Check data has been updated" });
+                    if (protocol || url || method || successCodes || timeout) {
+                      crud.update("check", id, checkObj, (err) => {
+                        if (err) {
+                          callback(500, { message: "Couldn't update CHECK" });
+                        } else {
+                          if (invalidMessage.length < 1) {
+                            callback(200, {
+                              message: "Check data has been updated",
+                            });
+                          } else {
+                            const message = `Check data has been updated but...  ${invalidMessage} are INVALID!`;
+                            callback(200, {
+                              message,
+                            });
+                          }
+                        }
+                      });
                     } else {
-                      const message = `Check data has been updated but...  ${invalidMessage}`;
-                      callback(200, {
-                        message,
+                      callback(500, {
+                        message: "None of the field is valid",
                       });
                     }
                   } else {
@@ -242,26 +267,44 @@ handler._check.delete = (reqObj, callback) => {
               if (tokenValidiy) {
                 //Checking if token is valid
                 //as well as associated with user
-                crud.delete("check", id, (err) =>
-                  err ? console.log(err) : false
-                );
-                let i = userData.checks.indexOf(id);
-                if (
-                  typeof userData.checks === "object" &&
-                  userData.checks instanceof Array &&
-                  i > -1
-                ) {
-                  userData.checks.splice(i, 1);
-                  const newUserData = { ...userData };
-                  crud.update("user", userData.mobileNo, newUserData, (err) =>
-                    err ? callback(500) : callback(200)
-                  );
-                  callback(200, { message: "Check successfully deleted" });
-                } else {
-                  callback(500, {
-                    message: "Check is not associated with user",
-                  });
-                }
+                crud.delete("check", id, (err) => {
+                  if (err) {
+                    callback(500, {
+                      message: "Couldn't delete CHECK. May not exists",
+                    });
+                  } else {
+                    let i = userData.checks.indexOf(id);
+                    if (
+                      typeof userData.checks === "object" &&
+                      userData.checks instanceof Array &&
+                      i > -1
+                    ) {
+                      userData.checks.splice(i, 1);
+                      const newUserData = { ...userData };
+                      crud.update(
+                        "user",
+                        userData.mobileNo,
+                        newUserData,
+                        (err) => {
+                          if (err) {
+                            callback(500, {
+                              message:
+                                "Couldn't update USER info by deleting a CHECK.",
+                            });
+                          } else {
+                            callback(200, {
+                              message: "Check successfully deleted",
+                            });
+                          }
+                        }
+                      );
+                    } else {
+                      callback(500, {
+                        message: "Check is not associated with user",
+                      });
+                    }
+                  }
+                });
               } else {
                 callback(403, {
                   message: "Token is not associated with user",

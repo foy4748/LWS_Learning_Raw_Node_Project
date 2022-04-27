@@ -90,7 +90,6 @@ handler._token.put = (reqObj, callback) => {
               callback(500, { message: "Token update has been failed" });
             }
           });
-          callback(200, { message: "Updated Token" });
         } else {
           callback(500, { message: "Token has been expired" });
         }
@@ -108,8 +107,11 @@ handler._token.delete = (reqObj, callback) => {
   if (id) {
     crud.read("token", id, (err, data) => {
       if (!err && data) {
-        crud.delete("token", id);
-        callback(200, { message: "Token has been deleted" });
+        crud.delete("token", id, (err) =>
+          err
+            ? callback(500, { message: "Token wasn't found in db" })
+            : callback(200, { message: "Token has been deleted" })
+        );
       } else {
         callback(500, { message: "Token wasn't found in db" });
       }
